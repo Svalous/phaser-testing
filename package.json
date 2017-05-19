@@ -1,0 +1,22 @@
+{
+  "name": "phaser-testing",
+  "version": "1.0.0",
+  "description": "Testing phaser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svalous/phaser-testing.git"
+  },
+  "author": "Nicholas Ragusa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/svalous/phaser-testing/issues"
+  },
+  "homepage": "https://github.com/svalous/phaser-testing#readme",
+  "dependencies": {
+    "phaser-ce": "^2.7.9"
+  }
+}
