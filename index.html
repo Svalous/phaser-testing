@@ -21,10 +21,12 @@ function preload() {
   game.load.image('ground', 'assets/platform.png');
   game.load.image('star', 'assets/star.png');
   game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+  game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
 }
 
 var platforms;
 var player;
+var baddies;
 var cursors;
 
 var stars;
@@ -46,7 +48,7 @@ function create() {
   ledge.body.immovable = true;
 
   // player setup
-  player = game.add.sprite(32, game.world.height - 150, 'dude');
+  player = game.add.sprite(150, game.world.height - 150, 'dude');
   game.physics.arcade.enable(player);
   // I don't like the bounce!
   //player.body.bounce.y = 0.2;
@@ -55,6 +57,19 @@ function create() {
   player.body.collideWorldBounds = true;
   player.animations.add('left', [0, 1, 2, 3], 10, true);
   player.animations.add('right', [5, 6, 7, 8], 10, true);
+
+  // baddie setup
+  baddies = game.add.group();
+  baddies.enableBody = true;
+  var testMan = baddies.create(64, 0, 'baddie');
+  game.physics.arcade.enable(testMan);
+  testMan.body.gravity.y = 500;
+  testMan.body.collideWorldBounds = true;
+  testMan.animations.add('left', [0, 1], 10, true);
+  testMan.animations.add('right', [2, 3], 10, true);
+  testMan.body.velocity.x = 200;
+  // set baddie to move on a loop
+  game.time.events.loop(Phaser.Timer.SECOND, moveBaddie, this);
 
   // stars
   stars = game.add.group();
@@ -74,13 +89,14 @@ function create() {
 }
 
 function update() {
-  // player and star collisons
+  // collisons
   game.physics.arcade.collide(player, platforms);
   game.physics.arcade.collide(stars, platforms);
+  game.physics.arcade.collide(baddies, platforms);
 
   // player and star overlap
   game.physics.arcade.overlap(player, stars, collectStar, null, this);
-
+ 
   // cursor
   player.body.velocity.x = 0;
   if( cursors.left.isDown )
@@ -103,6 +119,7 @@ function update() {
   {
     player.body.velocity.y = -450;
   }
+
 }
 
 function collectStar( player, star ) {
@@ -111,6 +128,15 @@ function collectStar( player, star ) {
 
   score += 10;
   scoreText.text = 'Score: ' + score;
+}
+
+function moveBaddie() {
+  // moves the baddie
+  baddies.children[0].body.velocity.x *= -1;
+  if( baddies.children[0].body.velocity.x > 0 )
+    baddies.children[0].animations.play('right');
+  else
+    baddies.children[0].animations.play('left');
 }
 
 </script>
