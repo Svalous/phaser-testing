@@ -35,7 +35,7 @@ var Game = (function (_Phaser$Game) {
 	function Game() {
 		_classCallCheck(this, Game);
 
-		_get(Object.getPrototypeOf(Game.prototype), 'constructor', this).call(this, 800, 600, Phaser.AUTO);
+		_get(Object.getPrototypeOf(Game.prototype), 'constructor', this).call(this, 800, 600, Phaser.AUTO, '');
 
 		this.state.add('Boot', _statesBoot2['default'], false);
 		this.state.add('Preload', _statesPreload2['default'], false);
@@ -212,6 +212,16 @@ var _objectsExampleObject2 = _interopRequireDefault(_objectsExampleObject);
 
 // Globals
 var platforms;
+var player;
+var cursors;
+
+var stars;
+var diamonds;
+var score = 0;
+var scoreText;
+
+var baddies;
+var baddieLoop;
 
 var Main = (function (_Phaser$State) {
 	_inherits(Main, _Phaser$State);
@@ -245,10 +255,119 @@ var Main = (function (_Phaser$State) {
 
 			//Example of including an object
 			//let exampleObject = new ExampleObject(this.game);
+
+			// player setup
+			player = this.game.add.sprite(150, this.game.world.height - 150, 'dude');
+			this.game.physics.arcade.enable(player);
+			// I don't like the bounce!
+			//player.body.bounce.y = 0.2;
+			// I want more gravity
+			player.body.gravity.y = 500;
+			player.body.collideWorldBounds = true;
+			player.animations.add('left', [0, 1, 2, 3], 10, true);
+			player.animations.add('right', [5, 6, 7, 8], 10, true);
+
+			// baddie setup
+			baddies = this.game.add.group();
+			baddies.enableBody = true;
+			var testMan = baddies.create(32, 150, 'baddie');
+			this.game.physics.arcade.enable(testMan);
+			testMan.body.gravity.y = 500;
+			testMan.body.collideWorldBounds = true;
+			testMan.animations.add('left', [0, 1], 10, true);
+			testMan.animations.add('right', [2, 3], 10, true);
+			testMan.body.velocity.x = 200;
+			// set baddie to move on a loop
+			baddieLoop = this.game.time.events.loop(Phaser.Timer.SECOND, this.moveBaddie, this);
+
+			// stars
+			stars = this.game.add.group();
+			stars.enableBody = true;
+			for (var i = 0; i < 12; i++) {
+				var star = stars.create(i * 70, 0, 'star');
+				star.body.gravity.y = 300;
+				star.body.bounce.y = 0.7 + Math.random() * 0.2;
+			}
+
+			diamonds = this.game.add.group();
+			diamonds.enableBody = true;
+			var diamond = diamonds.create(this.game.world.width - 100, 150, 'diamond');
+			diamond.body.immovable = true;
+
+			// score
+			scoreText = this.game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
+
+			// cursors
+			cursors = this.game.input.keyboard.createCursorKeys();
 		}
 	}, {
 		key: 'update',
-		value: function update() {}
+		value: function update() {
+			// collisons
+			this.game.physics.arcade.collide(player, platforms);
+			this.game.physics.arcade.collide(stars, platforms);
+			this.game.physics.arcade.collide(baddies, platforms);
+
+			// player and star overlap
+			this.game.physics.arcade.overlap(player, stars, this.collectStar, null, this);
+			this.game.physics.arcade.overlap(player, diamonds, this.collectDiamond, null, this);
+			this.game.physics.arcade.overlap(player, baddies, this.killPlayer, null, this);
+
+			// cursor
+			player.body.velocity.x = 0;
+			if (cursors.left.isDown) {
+				player.body.velocity.x = -200;
+				player.animations.play('left');
+			} else if (cursors.right.isDown) {
+				player.body.velocity.x = 200;
+				player.animations.play('right');
+			} else {
+				player.animations.stop();
+				player.frame = 4;
+			}
+
+			if (cursors.up.isDown && player.body.touching.down) {
+				player.body.velocity.y = -450;
+			}
+		}
+	}, {
+		key: 'incScore',
+		value: function incScore(x) {
+			score += x;
+			scoreText.text = 'Score: ' + score;
+		}
+	}, {
+		key: 'collectStar',
+		value: function collectStar(player, star) {
+			// removes star from screen
+			star.kill();
+
+			this.incScore(10);
+		}
+	}, {
+		key: 'collectDiamond',
+		value: function collectDiamond(player, diamond) {
+			// remove diamond from screen
+			diamond.kill();
+
+			this.incScore(50);
+		}
+	}, {
+		key: 'moveBaddie',
+		value: function moveBaddie() {
+			// moves the baddie
+			baddies.children[0].body.velocity.x *= -1;
+			if (baddies.children[0].body.velocity.x > 0) baddies.children[0].animations.play('right');else baddies.children[0].animations.play('left');
+		}
+	}, {
+		key: 'killPlayer',
+		value: function killPlayer(player, enemy) {
+			player.kill();
+			// must remove loop before .kill() or game will crash
+			this.game.time.events.remove(baddieLoop);
+			enemy.kill();
+			scoreText.text = "Game over!";
+		}
 	}]);
 
 	return Main;
@@ -285,10 +404,12 @@ var Preload = (function (_Phaser$State) {
 		key: 'preload',
 		value: function preload() {
 			/* Preload required assets */
-			this.game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-			this.game.load.image('star', 'assets/star.png');
-			this.game.load.image('ground', 'assets/platform.png');
 			this.game.load.image('sky', 'assets/sky.png');
+			this.game.load.image('ground', 'assets/platform.png');
+			this.game.load.image('star', 'assets/star.png');
+			this.game.load.image('diamond', 'assets/diamond.png');
+			this.game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+			this.game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
 		}
 	}, {
 		key: 'create',

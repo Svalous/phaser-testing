@@ -51,7 +51,7 @@ class Main extends Phaser.State {
 		// baddie setup
 		baddies = this.game.add.group();
 		baddies.enableBody = true;
-		var testMan = baddies.create(32, this.game.world.height - 400, 'baddie');
+		var testMan = baddies.create(32, 150, 'baddie');
 		this.game.physics.arcade.enable(testMan);
 		testMan.body.gravity.y = 500;
 		testMan.body.collideWorldBounds = true;
@@ -73,7 +73,7 @@ class Main extends Phaser.State {
 
 		diamonds = this.game.add.group();
 		diamonds.enableBody = true;
-		var diamond = diamonds.create(this.game.world.width - 100, 100,'diamond')
+		var diamond = diamonds.create(this.game.world.width - 100, 150,'diamond')
 		diamond.body.immovable = true;
 
 
@@ -92,7 +92,7 @@ class Main extends Phaser.State {
 		this.game.physics.arcade.collide(baddies, platforms);
 
 		// player and star overlap 
-		this.game.physics.arcade.overlap(player, stars, collectStar, null, this);
+		this.game.physics.arcade.overlap(player, stars, this.collectStar, null, this);
 		this.game.physics.arcade.overlap(player, diamonds, this.collectDiamond, null, this);
 		this.game.physics.arcade.overlap(player, baddies, this.killPlayer, null, this);
 
@@ -121,26 +121,26 @@ class Main extends Phaser.State {
 
 	}
 
-	function incScore( x ) {
+	incScore( x ) {
 		score += x;
 		scoreText.text = 'Score: ' + score;
 	}
 
-	function collectStar( player, star ) {
+	collectStar( player, star ) {
 		// removes star from screen
 		star.kill();
 
 		this.incScore(10);
 	}
 
-	function collectDiamond( player, diamond ) {
+	collectDiamond( player, diamond ) {
 		// remove diamond from screen
 		diamond.kill();
 
 		this.incScore(50);
 	}
 
-	function moveBaddie() {
+	moveBaddie() {
 		// moves the baddie
 		baddies.children[0].body.velocity.x *= -1;
 		if( baddies.children[0].body.velocity.x > 0 )
@@ -149,10 +149,10 @@ class Main extends Phaser.State {
 			baddies.children[0].animations.play('left');
 	}
 
-	function killPlayer( player, enemy ) {
+	killPlayer( player, enemy ) {
 		player.kill();
 		// must remove loop before .kill() or game will crash
-		game.time.events.remove(baddieLoop);
+		this.game.time.events.remove(baddieLoop);
 		enemy.kill();
 		scoreText.text = "Game over!";
 	}

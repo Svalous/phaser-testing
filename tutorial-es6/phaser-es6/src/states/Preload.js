@@ -2,12 +2,12 @@ class Preload extends Phaser.State {
 
 	preload() {
 		/* Preload required assets */
-		game.load.image('sky', 'assets/sky.png');
-		game.load.image('ground', 'assets/platform.png');
-		game.load.image('star', 'assets/star.png');
-		game.load.image('diamond', 'assets/diamond.png');
-		game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
-		game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
+		this.game.load.image('sky', 'assets/sky.png');
+		this.game.load.image('ground', 'assets/platform.png');
+		this.game.load.image('star', 'assets/star.png');
+		this.game.load.image('diamond', 'assets/diamond.png');
+		this.game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+		this.game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
 	}
 
 	create() {
